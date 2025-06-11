@@ -5,18 +5,28 @@ const fs = require('fs');
 const path = require('path');
 const { getBriefingData } = require('./server/scraper');
 
-
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-app.post('/generate-pdf', (req, res) => {
+app.post('/generate-pdf', async (req, res) => {
   const { location, datetime, drone, purpose, notes } = req.body;
   const doc = new PDFDocument();
   const filename = `Flight_Briefing_${Date.now()}.pdf`;
   const filepath = path.join(__dirname, 'output', filename);
+
+  let weather = 'Weather data unavailable';
+  let notams = 'NOTAMs not yet implemented';
+
+  try {
+    const briefing = await getBriefingData(location);
+    weather = briefing.weather;
+    notams = briefing.notams;
+  } catch (err) {
+    console.error('Error generating briefing data:', err.message);
+  }
 
   doc.pipe(fs.createWriteStream(filepath));
 
@@ -30,8 +40,8 @@ app.post('/generate-pdf', (req, res) => {
   doc.text(`Notes: ${notes || 'None'}`);
   doc.moveDown();
   doc.text('Airspace Classification: Class G (Uncontrolled)');
-  doc.text('NOTAMs/TFR: Placeholder - will scrape live data.');
-  doc.text('Weather: Placeholder - will scrape METAR based on location.');
+  doc.text(`NOTAMs/TFR: ${notams}`);
+  doc.text(`Weather: ${weather}`);
   doc.text('Checklist: Batteries, props, firmware, IMU, SD card, RTH settings.');
   doc.text('LAANC: Not required in Class G.');
   doc.text('ND Filter: ND16 recommended for midday sun.');
