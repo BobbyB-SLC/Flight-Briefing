@@ -9,8 +9,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
+const path = require('path');
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json()); // Needed to parse incoming JSON bodies
+
 
 // ✅ Corrected this path (no /routes)
 const leadsRoute = require('./leads');
