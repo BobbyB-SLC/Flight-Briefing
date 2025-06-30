@@ -9,7 +9,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
-const path = require('path');
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json()); // Needed to parse incoming JSON bodies
 
