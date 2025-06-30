@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lead Generator | Sky Lens Carolina</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    input, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
+    }
+    th, td {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+    }
+    .prompt {
+      font-style: italic;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Business Lead Generator</h1>
+  <p>Enter a city and business type to generate leads + outreach prompts.</p>
+
+  <form id="leadForm">
+    <input type="text" id="city" placeholder="Enter City (e.g., Sanford)" required />
+    <input type="text" id="type" placeholder="Enter Business Type (e.g., Real Estate Agency)" required />
+    <button type="submit">Generate Leads</button>
+  </form>
+
+  <div id="status"></div>
+  <div id="results"></div>
+  <button id="downloadBtn" style="display:none;">Download CSV</button>
+
+  <script>
+    const form = document.getElementById('leadForm');
+    const statusDiv = document.getElementById('status');
+    const resultsDiv = document.getElementById('results');
+    const downloadBtn = document.getElementById('downloadBtn');
+    let lastCSV = '';
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const city = document.getElementById('city').value;
+      const type = document.getElementById('type').value;
+
+      statusDiv.innerHTML = 'Scraping leads... please wait.';
+      resultsDiv.innerHTML = '';
+      downloadBtn.style.display = 'none';
+
+      const response = await fetch('/leads', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ city, type })
+      });
+
+      const data = await response.json();
+      if (data.length === 0) {
+        statusDiv.innerHTML = 'No leads found.';
+        return;
+      }
+
+      statusDiv.innerHTML = `Found ${data.length} leads:`;
+
+      let table = `<table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Website</th><th>Prompt</th></tr></thead><tbody>`;
+      let csv = "Name,Phone,Address,Website,Prompt\n";
+
+      data.forEach(biz => {
+        table += `<tr>
+          <td>${biz.name}</td>
+          <td>${biz.phone}</td>
+          <td>${biz.address}</td>
+          <td><a href="${biz.website}" target="_blank">${biz.website}</a></td>
+          <td><div class="prompt">${biz.prompt}</div></td>
+        </tr>`;
+        csv += `"${biz.name}","${biz.phone}","${biz.address}","${biz.website}","${biz.prompt.replace(/"/g, '""')}"\n`;
+      });
+
+      table += `</tbody></table>`;
+      resultsDiv.innerHTML = table;
+      lastCSV = csv;
+      downloadBtn.style.display = 'inline-block';
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      const blob = new Blob([lastCSV], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'business_leads.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>

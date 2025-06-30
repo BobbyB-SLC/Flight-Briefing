@@ -11,9 +11,10 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(express.json()); // Needed to parse incoming JSON bodies
-const leadsRoute = require('./routes/leads');
-app.use('/', leadsRoute);
 
+// ✅ Corrected this path (no /routes)
+const leadsRoute = require('./leads');
+app.use('/', leadsRoute);
 
 app.post('/generate-pdf', async (req, res) => {
   const { location, datetime, drone, purpose, notes } = req.body;
