@@ -1,90 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sky Lens Carolina | Agent Tools</title>
-  <link rel="stylesheet" href="/style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Drone Mission Planner</title>
   <style>
     body {
       font-family: sans-serif;
-      padding: 2rem;
-      max-width: 900px;
-      margin: auto;
-      background-color: #f4f4f4;
+      margin: 20px;
+      max-width: 700px;
     }
-
-    h1 {
-      text-align: center;
-      color: #333;
+    input, select, textarea {
+      width: 100%;
+      font-size: 1rem;
+      margin-bottom: 10px;
     }
-
-    .agent-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin-top: 2rem;
+    button {
+      padding: 10px;
+      font-size: 1rem;
+      cursor: pointer;
     }
-
-    .agent-tile {
-      background: white;
-      border: 2px solid #0077cc;
-      border-radius: 10px;
-      padding: 1.5rem;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .agent-tile:hover {
-      transform: scale(1.02);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .agent-tile h2 {
-      margin-bottom: 0.5rem;
-      color: #0077cc;
-    }
-
-    .agent-tile p {
-      font-size: 0.95rem;
-      color: #555;
-    }
-
-    .agent-tile a {
-      display: inline-block;
-      margin-top: 1rem;
-      background: #0077cc;
-      color: white;
-      text-decoration: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-weight: bold;
-    }
-
-    .agent-tile a:hover {
-      background: #005fa3;
+    textarea#gptPrompt {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Sky Lens Carolina | Agent Tools</h1>
+  <div class="agent-links">
+  <h2>Available Agent Tools</h2>
+  <ul>
+    <li><a href="briefing.html">🛫 Flight Briefing Generator</a></li>
+    <li><a href="leads.html">🧲 Business Lead Generator</a></li>
+  </ul>
+</div>
 
-  <div class="agent-grid">
+  
+  <h2>Flight Briefing Input</h2>
+  <form id="flightForm">
+    <label>Mission Location:<br><input type="text" name="location" required></label><br>
+    <label>Date & Time:<br><input type="datetime-local" name="datetime" required></label><br>
+    <label>Drone Model:<br>
+      <select name="drone" required>
+        <option value="DJI Mini 3">DJI Mini 3</option>
+        <option value="DJI Air 2S">DJI Air 2S</option>
+        <option value="DJI Mavic 3">DJI Mavic 3</option>
+        <option value="Other">Other</option>
+      </select>
+    </label><br>
+    <label>Flight Purpose:<br>
+      <select name="purpose" required>
+        <option value="Real Estate">Real Estate</option>
+        <option value="Roof Inspection">Roof Inspection</option>
+        <option value="Construction">Construction</option>
+        <option value="Event">Event</option>
+        <option value="Other">Other</option>
+      </select>
+    </label><br>
+    <label>Special Notes:<br><textarea name="notes" rows="4" cols="50"></textarea></label><br>
+    <button type="submit">Generate GPT Prompt</button>
+  </form>
 
-    <div class="agent-tile">
-      <h2>🛫 Flight Briefing Generator</h2>
-      <p>Plan your missions with airspace details, NOTAMs, weather, LAANC guidance, and automated PDF output.</p>
-      <a href="briefing.html">Launch Tool</a>
-    </div>
+  <h3>Copy & Paste into ChatGPT:</h3>
+  <textarea id="gptPrompt" rows="20" cols="80"></textarea>
 
-    <div class="agent-tile">
-      <h2>🧲 Business Lead Generator</h2>
-      <p>Scrape NC business listings by type and location, then generate AI-powered outreach prompts + CSV export.</p>
-      <a href="leads.html">Generate Leads</a>
-    </div>
+  <script>
+    const form = document.getElementById('flightForm');
+    const output = document.getElementById('gptPrompt');
 
-  </div>
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      const data = new FormData(form);
+
+      const prompt = `
+You are a professional drone operations assistant for a Part 107 certified pilot. Based on the following flight details, generate a complete preflight briefing including:
+- Airspace classification
+- NOTAMs/TFR concerns (if any)
+- Weather and visibility forecast
+- Drone readiness checklist
+- Operational risks or local advisories
+- Whether LAANC is required
+- Any other compliance or advisory info
+- ND filter recommendation based on lighting conditions, time of day, and flight purpose
+
+Flight Details:
+- Location: ${data.get("location")}
+- Date & Time: ${data.get("datetime")}
+- Drone Model: ${data.get("drone")}
+- Purpose: ${data.get("purpose")}
+- Notes: ${data.get("notes") || "None"}
+
+The output should be structured, professional, and formatted for a pilot preflight review.
+      `.trim();
+
+      output.value = prompt;
+      navigator.clipboard.writeText(prompt).then(() => {
+        alert("Prompt copied to clipboard. Paste it into ChatGPT!");
+      });
+    };
+  </script>
 </body>
 </html>
 
