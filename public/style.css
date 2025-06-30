@@ -1,0 +1,28 @@
+body {
+  font-family: sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 2rem;
+}
+
+h1, h2 {
+  color: #0077cc;
+}
+
+a {
+  color: #0077cc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.agent-tile {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agent-tile:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
