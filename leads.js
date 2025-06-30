@@ -4,9 +4,9 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 function buildSearchURL(city, type) {
-  const formattedCity = encodeURIComponent(city.toLowerCase().replace(/\s+/g, '-'));
-  const formattedType = encodeURIComponent(type.toLowerCase().replace(/\s+/g, '+'));
-  return `https://www.yellowpages.com/search?search_terms=${formattedType}&geo_location_terms=${formattedCity}%2C+nc`;
+  const formattedCity = encodeURIComponent(city + ' NC');
+  const formattedType = encodeURIComponent(type);
+  return `https://www.yellowpages.com/search?search_terms=${formattedType}&geo_location_terms=${formattedCity}`;
 }
 
 function generatePrompt(biz, city, type) {
