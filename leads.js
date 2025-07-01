@@ -14,30 +14,17 @@ router.post('/leads', async (req, res) => {
   const { city, type } = req.body;
   const location = `${type} in ${city}, NC`;
 
-  console.log(`🛰️ Querying Google Places for: ${location}`);
-  console.log(`🔐 Using API Key: ${apiKey ? '[REDACTED]' : 'MISSING!'}`);
-
   try {
     const response = await axios.get('https://maps.googleapis.com/maps/api/place/textsearch/json', {
-  params: {
-    query: location,
-    key: apiKey  // This should be `apiKey`, not `GOOGLE_API_KEY`
-    console.log('Google Places API response:', response.data);
+      params: {
+        query: location,
+        key: process.env.GOOGLE_API_KEY
+      }
+    });
 
-  }
-});
-
-console.log('📦 Google API raw response:', JSON.stringify(response.data, null, 2));
-
+    console.log('Google Places API response:', response.data); // ✅ Now inside try block
 
     const places = response.data.results;
-
-    console.log(`✅ Found ${places.length} results from Google Places`);
-    console.dir(places, { depth: null });
-
-    if (!places.length) {
-      return res.status(200).json([]);
-    }
 
     const leads = places.map(place => ({
       name: place.name,
@@ -47,9 +34,10 @@ console.log('📦 Google API raw response:', JSON.stringify(response.data, null,
 
     res.json(leads);
   } catch (err) {
-    console.error('❌ Google Places API error:', err.message);
-    res.status(500).json({ error: 'Failed to retrieve leads from Google Places API.' });
+    console.error('Google Places error:', err.message);
+    res.status(500).json({ error: 'Failed to retrieve leads.' });
   }
 });
+
 
 module.exports = router;
