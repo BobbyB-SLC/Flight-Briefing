@@ -88,9 +88,46 @@
         font-size: 0.95rem;
       }
     }
+.quick-nav {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1rem;
+  background: #f2f2f2;
+  border-bottom: 1px solid #ccc;
+  font-size: 1.1rem;
+  flex-wrap: wrap;
+}
+
+.quick-nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  transition: color 0.2s ease;
+}
+
+.quick-nav a:hover {
+  color: #c40000; /* Sky Lens red */
+}
+
+@media (max-width: 600px) {
+  .quick-nav {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1rem;
+  }
+}
   </style>
 </head>
 <body>
+<div class="quick-nav">
+  <a href="https://flight-briefing-l558.onrender.com/agents/index.html">Agent Home</a>
+  <a href="https://skylenscarolina.com/agent/briefing.html">Flight Briefing</a>
+  <a href="https://flight-briefing-l558.onrender.com/agents/leads.html">Lead Generator</a>
+</div>
+
+
   <div class="container">
     <h1>🧠 Sky Lens Agent Tools</h1>
     <p>Select an option below to launch a tool.</p>
