@@ -18,6 +18,10 @@ app.use(express.json()); // Needed to parse incoming JSON bodies
 const leadsRoute = require('./leads');
 app.use('/', leadsRoute);
 
+app.get('/', (req, res) => {
+  res.send('✅ Sky Lens Carolina API is live');
+});
+
 app.post('/generate-pdf', async (req, res) => {
   const { location, datetime, drone, purpose, notes } = req.body;
   const doc = new PDFDocument();
