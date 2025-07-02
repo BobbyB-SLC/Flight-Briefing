@@ -5,12 +5,7 @@ const axios = require('axios');
 const apiKey = process.env.GOOGLE_API_KEY;
 console.log('🔑 Loaded API key:', apiKey ? 'Present' : 'Missing');
 
-// Prompt Generator
-function generatePrompt(biz, city, type) {
-  return `Hi ${biz.name}, I'm Bobby with Sky Lens Carolina — a veteran-owned drone service in NC. I noticed you're a ${type.toLowerCase()} in ${city}, and I wanted to offer FAA-certified aerial photography to help listings stand out and sell faster. We specialize in high-resolution drone imagery, amenity flyovers, and boundary overlays. Let's elevate your next listing together.`;
-}
-
-// Fetch all results using next_page_token pagination
+// Fetch all paginated text search results
 async function fetchAllPlaces(query, key) {
   let url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${key}`;
   let allResults = [];
@@ -30,8 +25,7 @@ async function fetchAllPlaces(query, key) {
     }
 
     if (data.next_page_token) {
-      // Must wait before using next_page_token
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000)); // wait before using next_page_token
       url = `https://maps.googleapis.com/maps/api/place/textsearch/json?pagetoken=${data.next_page_token}&key=${key}`;
     } else {
       url = null;
@@ -43,6 +37,18 @@ async function fetchAllPlaces(query, key) {
   return allResults;
 }
 
+// Fetch additional place details (phone, website)
+async function getPlaceDetails(placeId, key) {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,formatted_address,formatted_phone_number,website&key=${key}`;
+    const res = await axios.get(url);
+    return res.data.result;
+  } catch (err) {
+    console.error(`Error fetching details for place_id ${placeId}:`, err.message);
+    return {};
+  }
+}
+
 // Route Handler
 router.post('/leads', async (req, res) => {
   const { city, type } = req.body;
@@ -51,13 +57,20 @@ router.post('/leads', async (req, res) => {
   try {
     const places = await fetchAllPlaces(query, apiKey);
 
-    const leads = places.map(place => ({
-      name: place.name,
-      address: place.formatted_address || 'No address available',
-      phone: place.formatted_phone_number || 'N/A',
-      website: place.website || 'N/A',
-      prompt: generatePrompt({ name: place.name }, city, type)
-    }));
+    const leads = [];
+
+    for (const place of places) {
+      const details = await getPlaceDetails(place.place_id, apiKey);
+
+      leads.push({
+        name: details.name || place.name,
+        address: details.formatted_address || place.formatted_address || 'No address available',
+        phone: details.formatted_phone_number || 'N/A',
+        website: details.website || 'N/A'
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 150)); // throttle API calls to avoid hitting quota
+    }
 
     res.json(leads);
   } catch (err) {
