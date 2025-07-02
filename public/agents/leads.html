@@ -132,15 +132,14 @@ data.forEach(biz => {
     <td>${biz.address}</td>
     <td><a href="${biz.website}" target="_blank">${biz.website}</a></td>
   </tr>`;
+
   csv += `"${biz.name}","${biz.phone}","${biz.address}","${biz.website}"\n`;
 });
 
-
-      table += `</tbody></table>`;
-      resultsDiv.innerHTML = table;
-      lastCSV = csv;
-      downloadBtn.style.display = 'inline-block';
-    });
+table += `</tbody></table>`;
+resultsDiv.innerHTML = table;
+lastCSV = csv; // ✅ Now contains full set
+downloadBtn.style.display = 'inline-block';
 
     downloadBtn.addEventListener('click', () => {
       const blob = new Blob([lastCSV], { type: 'text/csv' });
