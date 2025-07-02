@@ -122,19 +122,19 @@
 
       statusDiv.innerHTML = `Found ${data.length} leads:`;
 
-      let table = `<table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Website</th><th>Prompt</th></tr></thead><tbody>`;
-      let csv = "Name,Phone,Address,Website,Prompt\n";
+     let table = `<table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Website</th></tr></thead><tbody>`;
+let csv = "Name,Phone,Address,Website\n";
 
-      data.forEach(biz => {
-        table += `<tr>
-          <td>${biz.name}</td>
-          <td>${biz.phone}</td>
-          <td>${biz.address}</td>
-          <td><a href="${biz.website}" target="_blank">${biz.website}</a></td>
-          <td><div class="prompt">${biz.prompt}</div></td>
-        </tr>`;
-        csv += `"${biz.name}","${biz.phone}","${biz.address}","${biz.website}","${biz.prompt.replace(/"/g, '""')}"\n`;
-      });
+data.forEach(biz => {
+  table += `<tr>
+    <td>${biz.name}</td>
+    <td>${biz.phone}</td>
+    <td>${biz.address}</td>
+    <td><a href="${biz.website}" target="_blank">${biz.website}</a></td>
+  </tr>`;
+  csv += `"${biz.name}","${biz.phone}","${biz.address}","${biz.website}"\n`;
+});
+
 
       table += `</tbody></table>`;
       resultsDiv.innerHTML = table;
