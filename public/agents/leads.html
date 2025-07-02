@@ -33,54 +33,49 @@
       padding: 0.5rem;
       border: 1px solid #ccc;
     }
-    .prompt {
-      font-style: italic;
-      margin-top: 0.5rem;
-    }
 
     .quick-nav {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  padding: 1rem;
-  background: #f2f2f2;
-  border-bottom: 1px solid #ccc;
-  font-size: 1.1rem;
-  flex-wrap: wrap;
-}
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      padding: 1rem;
+      background: #f2f2f2;
+      border-bottom: 1px solid #ccc;
+      font-size: 1.1rem;
+      flex-wrap: wrap;
+    }
 
-.quick-nav a {
-  text-decoration: none;
-  color: #333;
-  font-weight: bold;
-  transition: color 0.2s ease;
-}
+    .quick-nav a {
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+      transition: color 0.2s ease;
+    }
 
-.quick-nav a:hover {
-  color: #c40000; /* Sky Lens red */
-}
+    .quick-nav a:hover {
+      color: #c40000; /* Sky Lens red */
+    }
 
-@media (max-width: 600px) {
-  .quick-nav {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    font-size: 1rem;
-  }
-}
-
+    @media (max-width: 600px) {
+      .quick-nav {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        font-size: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
 
   <div class="quick-nav">
-  <a href="https://flight-briefing-l558.onrender.com/agents/index.html">Agent Home</a>
-  <a href="https://skylenscarolina.com/agent/briefing.html">Flight Briefing</a>
-  <a href="https://flight-briefing-l558.onrender.com/agents/leads.html">Lead Generator</a>
-</div>
+    <a href="https://flight-briefing-l558.onrender.com/agents/index.html">Agent Home</a>
+    <a href="https://skylenscarolina.com/agent/briefing.html">Flight Briefing</a>
+    <a href="https://flight-briefing-l558.onrender.com/agents/leads.html">Lead Generator</a>
+  </div>
 
   <h1>Business Lead Generator</h1>
-  <p>Enter a city and business type to generate leads + outreach prompts.</p>
+  <p>Enter a city and business type to generate leads.</p>
 
   <form id="leadForm">
     <input type="text" id="city" placeholder="Enter City (e.g., Sanford)" required />
@@ -101,6 +96,7 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const city = document.getElementById('city').value;
       const type = document.getElementById('type').value;
 
@@ -108,38 +104,45 @@
       resultsDiv.innerHTML = '';
       downloadBtn.style.display = 'none';
 
-      const response = await fetch('/leads', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ city, type })
-      });
+      try {
+        const response = await fetch('/leads', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ city, type })
+        });
 
-      const data = await response.json();
-      if (data.length === 0) {
-        statusDiv.innerHTML = 'No leads found.';
-        return;
+        const data = await response.json();
+        if (!Array.isArray(data) || data.length === 0) {
+          statusDiv.innerHTML = 'No leads found.';
+          return;
+        }
+
+        statusDiv.innerHTML = `Found ${data.length} leads:`;
+
+        let table = `<table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Website</th></tr></thead><tbody>`;
+        let csv = "Name,Phone,Address,Website\n";
+
+        data.forEach(biz => {
+          table += `<tr>
+            <td>${biz.name}</td>
+            <td>${biz.phone}</td>
+            <td>${biz.address}</td>
+            <td><a href="${biz.website}" target="_blank">${biz.website}</a></td>
+          </tr>`;
+
+          csv += `"${biz.name}","${biz.phone}","${biz.address}","${biz.website}"\n`;
+        });
+
+        table += `</tbody></table>`;
+        resultsDiv.innerHTML = table;
+        lastCSV = csv;
+        downloadBtn.style.display = 'inline-block';
+
+      } catch (err) {
+        console.error('Fetch error:', err);
+        statusDiv.innerHTML = 'An error occurred while retrieving leads.';
       }
-
-      statusDiv.innerHTML = `Found ${data.length} leads:`;
-
-     let table = `<table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Website</th></tr></thead><tbody>`;
-let csv = "Name,Phone,Address,Website\n";
-
-data.forEach(biz => {
-  table += `<tr>
-    <td>${biz.name}</td>
-    <td>${biz.phone}</td>
-    <td>${biz.address}</td>
-    <td><a href="${biz.website}" target="_blank">${biz.website}</a></td>
-  </tr>`;
-
-  csv += `"${biz.name}","${biz.phone}","${biz.address}","${biz.website}"\n`;
-});
-
-table += `</tbody></table>`;
-resultsDiv.innerHTML = table;
-lastCSV = csv; // ✅ Now contains full set
-downloadBtn.style.display = 'inline-block';
+    });
 
     downloadBtn.addEventListener('click', () => {
       const blob = new Blob([lastCSV], { type: 'text/csv' });
