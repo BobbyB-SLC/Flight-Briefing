@@ -1,7 +1,7 @@
-const express = require('express');
-const router = express.Router();
-const axios = require('axios');
+import express from 'express';
+import axios from 'axios';
 
+const router = express.Router();
 const apiKey = process.env.GOOGLE_API_KEY;
 console.log('🔑 Loaded API key:', apiKey ? 'Present' : 'Missing');
 
@@ -79,4 +79,4 @@ router.post('/leads', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

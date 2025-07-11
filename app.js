@@ -1,21 +1,28 @@
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
-const { getBriefingData } = require('./server/scraper');
+// ✅ Fully upgraded app.js using ES Modules and OpenAI v5+
+import dotenv from 'dotenv';
+dotenv.config();
+
+import express from 'express';
+import bodyParser from 'body-parser';
+import PDFDocument from 'pdfkit';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { Configuration, OpenAIApi } from 'openai';
+import leadsRoute from './leads.js';
+import { getBriefingData } from './server/scraper.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json()); // Needed to parse incoming JSON bodies
 
-
-// ✅ Corrected this path (no /routes)
-const leadsRoute = require('./leads');
 app.use('/', leadsRoute);
 
 app.get('/', (req, res) => {
@@ -63,13 +70,7 @@ app.post('/generate-pdf', async (req, res) => {
   });
 });
 
-
-const { Configuration, OpenAIApi } = require('openai');
-
-// Set up OpenAI
-const openai = new OpenAIApi(
-  new Configuration({ apiKey: process.env.OPENAI_API_KEY })
-);
+const openai = new OpenAIApi(new Configuration({ apiKey: process.env.OPENAI_API_KEY }));
 
 app.post('/generateBriefing', async (req, res) => {
   const { location, datetime, drone, purpose, notes } = req.body;
@@ -108,7 +109,6 @@ The output should be structured, professional, and formatted for a pilot preflig
 
     doc.pipe(writeStream);
 
-    // Logo
     const logoPath = path.join(__dirname, 'public', 'skylens_logo.jpg');
     if (fs.existsSync(logoPath)) {
       doc.image(logoPath, { fit: [100, 100], align: 'center' });
@@ -131,7 +131,6 @@ The output should be structured, professional, and formatted for a pilot preflig
     res.status(500).send('Failed to generate briefing.');
   }
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
