@@ -1,4 +1,3 @@
-// ✅ Fully upgraded app.js using ES Modules and OpenAI v5+
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -9,7 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import leadsRoute from './leads.js';
 import { getBriefingData } from './server/scraper.js';
 
@@ -29,6 +28,7 @@ app.get('/', (req, res) => {
   res.send('✅ Sky Lens Carolina API is live');
 });
 
+// Original scraper-based PDF route
 app.post('/generate-pdf', async (req, res) => {
   const { location, datetime, drone, purpose, notes } = req.body;
   const doc = new PDFDocument();
@@ -70,7 +70,10 @@ app.post('/generate-pdf', async (req, res) => {
   });
 });
 
-const openai = new OpenAIApi(new Configuration({ apiKey: process.env.OPENAI_API_KEY }));
+// ✅ GPT-powered flight briefing (OpenAI v5 syntax)
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 app.post('/generateBriefing', async (req, res) => {
   const { location, datetime, drone, purpose, notes } = req.body;
@@ -94,13 +97,13 @@ Flight Details:
 The output should be structured, professional, and formatted for a pilot preflight review.`;
 
   try {
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
     });
 
-    const briefingText = completion.data.choices[0].message.content;
+    const briefingText = completion.choices[0].message.content;
 
     const doc = new PDFDocument();
     const filename = `flight-briefing-${Date.now()}.pdf`;
