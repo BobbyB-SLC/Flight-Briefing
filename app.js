@@ -63,6 +63,76 @@ app.post('/generate-pdf', async (req, res) => {
   });
 });
 
+
+const { Configuration, OpenAIApi } = require('openai');
+
+// Set up OpenAI
+const openai = new OpenAIApi(
+  new Configuration({ apiKey: process.env.OPENAI_API_KEY })
+);
+
+app.post('/generateBriefing', async (req, res) => {
+  const { location, datetime, drone, purpose, notes } = req.body;
+
+  const prompt = `You are a professional drone operations assistant for a Part 107 certified pilot. Based on the following flight details, generate a complete preflight briefing including:
+- Airspace classification
+- NOTAMs/TFR concerns (if any)
+- Weather and visibility forecast
+- Drone readiness checklist
+- Operational risks or local advisories
+- Whether LAANC is required
+- ND filter recommendation based on lighting conditions, time of day, and flight purpose
+
+Flight Details:
+- Location: ${location}
+- Date & Time: ${datetime}
+- Drone Model: ${drone}
+- Purpose: ${purpose}
+- Notes: ${notes || 'None'}
+
+The output should be structured, professional, and formatted for a pilot preflight review.`;
+
+  try {
+    const completion = await openai.createChatCompletion({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+    });
+
+    const briefingText = completion.data.choices[0].message.content;
+
+    const doc = new PDFDocument();
+    const filename = `flight-briefing-${Date.now()}.pdf`;
+    const filepath = path.join(__dirname, 'public', filename);
+    const writeStream = fs.createWriteStream(filepath);
+
+    doc.pipe(writeStream);
+
+    // Logo
+    const logoPath = path.join(__dirname, 'public', 'skylens_logo.jpg');
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, { fit: [100, 100], align: 'center' });
+    }
+
+    doc.moveDown().fontSize(18).text('Sky Lens Carolina - Flight Briefing', {
+      align: 'center',
+      underline: true,
+    });
+
+    doc.moveDown().fontSize(12).text(briefingText, { align: 'left' });
+
+    doc.end();
+
+    writeStream.on('finish', () => {
+      res.sendFile(filepath);
+    });
+  } catch (err) {
+    console.error('GPT briefing error:', err);
+    res.status(500).send('Failed to generate briefing.');
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
