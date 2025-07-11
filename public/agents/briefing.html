@@ -1,0 +1,71 @@
+// briefing.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flight Briefing Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 1.5rem;
+      background: #354F52;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2F3E46;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Flight Briefing Generator</h1>
+    <form action="/generateBriefing" method="POST" target="_blank">
+      <label for="location">Flight Location</label>
+      <input type="text" id="location" name="location" required />
+
+      <label for="datetime">Flight Date & Time</label>
+      <input type="datetime-local" id="datetime" name="datetime" required />
+
+      <label for="drone">Drone Model</label>
+      <input type="text" id="drone" name="drone" required />
+
+      <label for="purpose">Flight Purpose</label>
+      <input type="text" id="purpose" name="purpose" required />
+
+      <label for="notes">Additional Notes</label>
+      <textarea id="notes" name="notes" rows="4"></textarea>
+
+      <button type="submit">Generate Briefing</button>
+    </form>
+  </div>
+</body>
+</html>
